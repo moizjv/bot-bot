@@ -13,41 +13,45 @@ import org.imaginea.botbot.common.Prefrences;
 import android.content.Context;
 import android.util.Log;
 import android.view.View;
+import android.webkit.WebView;
 import android.widget.EditText;
 import android.widget.RadioButton;
 
+import com.imaginea.botbot.utility.WebViewHandler;
 import com.jayway.android.robotium.solo.Solo;
 
-public class RobotiumKeywordDefinition extends BaseKeywordDefinitions implements IKeywords {
+public class RobotiumKeywordDefinition extends BaseKeywordDefinitions implements
+		IKeywords {
 	private Solo solo;
-	private static HashMap<String, Integer> rmap=new HashMap<String, Integer>();
-	
+	private static HashMap<String, Integer> rmap = new HashMap<String, Integer>();
+
 	public RobotiumKeywordDefinition(Prefrences prefrences) {
-		Object executionContext=prefrences.getExecutionContext();
-		if(executionContext instanceof Solo){
-			this.solo=(Solo) executionContext;
-		}else{
-			this.solo=null;
+		Object executionContext = prefrences.getExecutionContext();
+		if (executionContext instanceof Solo) {
+			this.solo = (Solo) executionContext;
+		} else {
+			this.solo = null;
 		}
 		collectSupportedMethods(this.getClass());
 	}
-	
-	public static void storeRId(Context context,String basePackage){
+
+	public static void storeRId(Context context, String basePackage) {
 		try {
-			Class<?> cls=null;
-			Class<?> rcls=Class.forName(basePackage+".R", true, context.getClassLoader());
-			Class<?> decLaredClasses[]=rcls.getDeclaredClasses();
-			for(Class<?> declaredClass:decLaredClasses){
-				if(declaredClass.getName().endsWith("id")){
-					cls=declaredClass;
+			Class<?> cls = null;
+			Class<?> rcls = Class.forName(basePackage + ".R", true,
+					context.getClassLoader());
+			Class<?> decLaredClasses[] = rcls.getDeclaredClasses();
+			for (Class<?> declaredClass : decLaredClasses) {
+				if (declaredClass.getName().endsWith("id")) {
+					cls = declaredClass;
 					break;
 				}
 			}
-			Object instance=cls.newInstance();
-			Field variables[]=cls.getDeclaredFields();
-			for(Field variable:variables){
+			Object instance = cls.newInstance();
+			Field variables[] = cls.getDeclaredFields();
+			for (Field variable : variables) {
 				String name = variable.getName();
-				int value=variable.getInt(instance);
+				int value = variable.getInt(instance);
 				rmap.put(name, value);
 			}
 			Log.i("bot-bot", rmap.toString());
@@ -57,11 +61,11 @@ public class RobotiumKeywordDefinition extends BaseKeywordDefinitions implements
 			e.printStackTrace();
 		} catch (IllegalAccessException e) {
 			e.printStackTrace();
-		}catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	@Override
 	public boolean isSupported(String type) {
 		if (type.equalsIgnoreCase("robotium"))
@@ -73,7 +77,7 @@ public class RobotiumKeywordDefinition extends BaseKeywordDefinitions implements
 	@Override
 	public void assertbuttonpresent(String buttonText) {
 		boolean found = solo.searchButton(buttonText);
-		Assert.assertTrue("Unable to find button with the said text.",found);
+		Assert.assertTrue("Unable to find button with the said text.", found);
 	}
 
 	@Override
@@ -91,37 +95,75 @@ public class RobotiumKeywordDefinition extends BaseKeywordDefinitions implements
 	@Override
 	public void assertpartialtextpresent(String text) {
 		boolean found = solo.searchText(text);
-		Assert.assertTrue("Unable to find button with the said text.",found);
+
+		// checking for text in web view
+
+		if (!found) {
+
+			if (WebViewHandler.getInstanceOfWebView(solo) != null) {
+
+				WebView browser = WebViewHandler.getInstanceOfWebView(solo);
+				found = WebViewHandler.isTextPresentInWebView(browser, text,
+						solo);
+
+				// intercept calls to console.log
+
+				solo.sleep(1000);
+
+			}
+
+		}
+		Assert.assertTrue("Unable to find text."+text, found);
 	}
 
 	@Override
 	public void assertradiobuttonpresent(String buttonText) {
 		ArrayList<RadioButton> radioButtons = solo.getCurrentRadioButtons();
-		boolean found=false;
-		for(RadioButton radioButton:radioButtons){
-			if(radioButton.getText()==buttonText){
-				found =true;
+		boolean found = false;
+		for (RadioButton radioButton : radioButtons) {
+			if (radioButton.getText() == buttonText) {
+				found = true;
 				break;
 			}
 		}
-		Assert.assertTrue("Not able to find the radio button withe text: "+buttonText,found);
+		Assert.assertTrue("Not able to find the radio button withe text: "
+				+ buttonText, found);
 	}
 
 	@Override
 	public void assertspinnerpresent(String spinnerText) {
-		boolean found =solo.isSpinnerTextSelected(spinnerText);
-		Assert.assertTrue("Unable to find a spinner with the said text: "+spinnerText,found);
+		boolean found = solo.isSpinnerTextSelected(spinnerText);
+		Assert.assertTrue("Unable to find a spinner with the said text: "
+				+ spinnerText, found);
 	}
 
 	@Override
 	public void asserttextpresent(String text) {
-		boolean found =solo.searchText(text);
-		Assert.assertTrue("Unable to find said text: "+text,found);
+		boolean found = solo.searchText(text);
+
+		// checking text in webview
+
+		if (!found) {
+
+			if (WebViewHandler.getInstanceOfWebView(solo) != null) {
+
+				WebView browser = WebViewHandler.getInstanceOfWebView(solo);
+				found = WebViewHandler.isTextPresentInWebView(browser, text,
+						solo);
+
+				// intercept calls to console.log
+
+				solo.sleep(1000);
+
+			}
+
+		}
+		Assert.assertTrue("Unable to find said text: " + text, found);
 	}
 
 	@Override
 	public void checkbuttonpresent(String buttonText) {
-		boolean found =solo.searchButton(buttonText);
+		boolean found = solo.searchButton(buttonText);
 		if (!found) {
 			System.out.println("Unable to find button with said text: "
 					+ buttonText + ". Continuing with the execution.");
@@ -138,10 +180,10 @@ public class RobotiumKeywordDefinition extends BaseKeywordDefinitions implements
 	@Override
 	public void checkradiobuttonpresent(String buttonText) {
 		ArrayList<RadioButton> radioButtons = solo.getCurrentRadioButtons();
-		boolean found=false;
-		for(RadioButton radioButton:radioButtons){
-			if(radioButton.getText()==buttonText){
-				found =true;
+		boolean found = false;
+		for (RadioButton radioButton : radioButtons) {
+			if (radioButton.getText() == buttonText) {
+				found = true;
 				break;
 			}
 		}
@@ -153,11 +195,27 @@ public class RobotiumKeywordDefinition extends BaseKeywordDefinitions implements
 
 	@Override
 	public void checktextpresent(String text) {
-		boolean found =solo.searchText(text);
+		boolean found = solo.searchText(text);
+
+		// checking for text in web view
 		if (!found) {
-			System.out.println("Unable to find said text: "
-					+ text + ". Continuing with the execution.");
+			if (WebViewHandler.getInstanceOfWebView(solo) != null) {
+
+				WebView browser = WebViewHandler.getInstanceOfWebView(solo);
+				found = WebViewHandler.isTextPresentInWebView(browser, text,
+						solo);
+
+				// intercept calls to console.log
+
+				solo.sleep(1000);
+
+			}
+
 		}
+
+		if (!found)
+			System.out.println("Unable to find said text: " + text
+					+ ". Continuing with the execution.");
 	}
 
 	@Override
@@ -172,10 +230,10 @@ public class RobotiumKeywordDefinition extends BaseKeywordDefinitions implements
 
 	@Override
 	public void clickbyid(String id) {
-		if(!rmap.containsKey(id)){
-		Assert.fail("The said id was not found");
+		if (!rmap.containsKey(id)) {
+			Assert.fail("The said id was not found");
 		}
-		int idvalue=rmap.get(id);
+		int idvalue = rmap.get(id);
 		View view = solo.getView(idvalue);
 		solo.clickOnView(view);
 	}
@@ -188,18 +246,18 @@ public class RobotiumKeywordDefinition extends BaseKeywordDefinitions implements
 	@Override
 	public void clickradiobutton(String buttonText) {
 		ArrayList<RadioButton> radioButtons = solo.getCurrentRadioButtons();
-		boolean found=false;
-		int i=0;
-		for(RadioButton radioButton:radioButtons){
-			if(radioButton.getText()==buttonText){
-				found =true;
+		boolean found = false;
+		int i = 0;
+		for (RadioButton radioButton : radioButtons) {
+			if (radioButton.getText() == buttonText) {
+				found = true;
 				solo.clickOnRadioButton(i);
 				break;
 			}
 			i++;
 		}
 		Assert.assertTrue("Unable to find radio button with said text: "
-					+ buttonText,found);
+				+ buttonText, found);
 	}
 
 	@Override
@@ -210,7 +268,23 @@ public class RobotiumKeywordDefinition extends BaseKeywordDefinitions implements
 
 	@Override
 	public void clicktext(String text) {
-		solo.clickOnText(text);
+		try {
+			solo.clickOnText(text);
+		}
+
+		// Trying to click text in web view
+		catch (junit.framework.AssertionFailedError e) {
+
+			if (WebViewHandler.getInstanceOfWebView(solo) != null) {
+
+				WebView browser = WebViewHandler.getInstanceOfWebView(solo);
+
+				WebViewHandler.clickOnLinkInWebView(browser, text, solo);
+				
+			} else {
+				throw e;
+			}
+		}
 	}
 
 	@Override
@@ -220,28 +294,30 @@ public class RobotiumKeywordDefinition extends BaseKeywordDefinitions implements
 
 	@Override
 	public void entertext(String locator, String text) {
-		if(rmap.containsKey(locator)){
-			EditText textView=(EditText)solo.getView(rmap.get(locator));
+		if (rmap.containsKey(locator)) {
+			EditText textView = (EditText) solo.getView(rmap.get(locator));
 			solo.enterText(textView, text);
-		}else{
-		int index;
-		try{
-			index=Integer.parseInt(locator);
-			Assert.assertTrue("Unable to find the element after waiting at index: "+index, waitForEditText(index));
-			solo.enterText(index, text);
-		}catch(NumberFormatException e){
-			Assert.fail("entertext based on locator is not supported at this moment.");
-		}
+		} else {
+			int index;
+			try {
+				index = Integer.parseInt(locator);
+				Assert.assertTrue(
+						"Unable to find the element after waiting at index: "
+								+ index, waitForEditText(index));
+				solo.enterText(index, text);
+			} catch (NumberFormatException e) {
+				Assert.fail("entertext based on locator is not supported at this moment.");
+			}
 		}
 	}
-	
-	private boolean waitForEditText(int index){
+
+	private boolean waitForEditText(int index) {
 		boolean found = true;
-		for(int i=0;;i++){
-			if(i>=60)
+		for (int i = 0;; i++) {
+			if (i >= 60)
 				break;
-			else if(solo.getEditText(index)!=null){
-				found=true;
+			else if (solo.getEditText(index) != null) {
+				found = true;
 				break;
 			}
 			solo.sleep(1000);
@@ -256,7 +332,7 @@ public class RobotiumKeywordDefinition extends BaseKeywordDefinitions implements
 
 	@Override
 	public void scrollDown(int noOfTimes) {
-		for(int i=0;i<noOfTimes;i++){
+		for (int i = 0; i < noOfTimes; i++) {
 			solo.sendKey(Solo.DOWN);
 		}
 
@@ -264,19 +340,19 @@ public class RobotiumKeywordDefinition extends BaseKeywordDefinitions implements
 
 	@Override
 	public void scrollup(int noOfTimes) {
-		for(int i=0;i<noOfTimes;i++){
+		for (int i = 0; i < noOfTimes; i++) {
 			solo.sendKey(Solo.UP);
 		}
 	}
-	
+
 	@Override
 	public void verifyscreen(String imagePath) {
-		
+
 	}
-	
+
 	@Override
 	public void waitForScreen(String imagePath, Double time) {
-		
+
 	}
 
 	@Override
@@ -286,9 +362,9 @@ public class RobotiumKeywordDefinition extends BaseKeywordDefinitions implements
 			supported = true;
 		}
 		return supported;
-	
+
 	}
-	
+
 	@Override
 	public void execute(Command command) {
 		invoker(this, command.getName(), Arrays.asList(command.getParameters()));
