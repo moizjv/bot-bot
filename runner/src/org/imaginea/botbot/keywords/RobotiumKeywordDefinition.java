@@ -9,6 +9,7 @@ import junit.framework.Assert;
 
 import org.imaginea.botbot.common.Command;
 import org.imaginea.botbot.common.Prefrences;
+import org.imaginea.botbot.utility.WebViewHandler;
 
 import android.content.Context;
 import android.util.Log;
@@ -17,7 +18,6 @@ import android.webkit.WebView;
 import android.widget.EditText;
 import android.widget.RadioButton;
 
-import com.imaginea.botbot.utility.WebViewHandler;
 import com.jayway.android.robotium.solo.Solo;
 
 public class RobotiumKeywordDefinition extends BaseKeywordDefinitions implements
