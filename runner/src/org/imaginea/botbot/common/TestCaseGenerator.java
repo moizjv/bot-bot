@@ -125,7 +125,7 @@ public class TestCaseGenerator {
                     + javaClassFile.substring(1);
             
             //checking if folder name is datadriven 
-			if (javaClassFile.equalsIgnoreCase("datadriven")) {
+			if (javaClassFile.equalsIgnoreCase("datadriven")&&template.contentEquals("RobotiumTemplate")) {
 				try {
 					packagePath = packagePath.substring(0,
 							packagePath.lastIndexOf(pathSeparator));
