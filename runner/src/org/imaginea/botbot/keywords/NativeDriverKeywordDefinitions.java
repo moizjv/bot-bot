@@ -103,6 +103,16 @@ public class NativeDriverKeywordDefinitions extends BaseKeywordDefinitions imple
 				"Test failed. Text dont match expected: " + text
 						+ " but present is: " + elementText);
 	}
+	
+	public void asserttextnotpresent( String text) {
+		boolean result = uf.waitForElementPresent(driver,
+				AndroidNativeBy.partialText(text));
+		String elementText = driver.findElement(
+				AndroidNativeBy.partialText(text)).getText();
+		Assert.assertFalse(result, "Test failed. Found text: " + text);
+		Assert.assertFalse(text.contentEquals(elementText),
+				"Test failed. Text present : " + text);
+	}
 
 	public void clickback() {
 		driver.getKeyboard().sendKeys(AndroidKeys.BACK);

@@ -19,6 +19,8 @@ public interface IKeywords {
 			String spinnerText);
 
 	public void asserttextpresent( String text);
+	
+	public void asserttextnotpresent(String text);
 
 	public void checkbuttonpresent( String buttonText);
 

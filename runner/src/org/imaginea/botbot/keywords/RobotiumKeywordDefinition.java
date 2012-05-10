@@ -160,6 +160,31 @@ public class RobotiumKeywordDefinition extends BaseKeywordDefinitions implements
 		}
 		Assert.assertTrue("Unable to find said text: " + text, found);
 	}
+	
+	@Override
+	public void asserttextnotpresent(String text) {
+		boolean found = solo.searchText(text);
+
+		// checking text in webview
+
+		if (!found) {
+
+			if (WebViewHandler.getInstanceOfWebView(solo) != null) {
+
+				WebView browser = WebViewHandler.getInstanceOfWebView(solo);
+				found = WebViewHandler.isTextPresentInWebView(browser, text,
+						solo);
+
+				// intercept calls to console.log
+
+				solo.sleep(1000);
+
+			}
+
+		}
+		Assert.assertFalse("Found the text: " + text, found);
+	}
+	
 
 	@Override
 	public void checkbuttonpresent(String buttonText) {
