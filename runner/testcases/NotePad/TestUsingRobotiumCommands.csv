@@ -1,0 +1,6 @@
+,,
+clickOnMenuItem,Add note
+enterText,0,Hello World
+clickOnMenuItem,Save
+waitForText,Hello World
+asserttextpresent,Hello World
